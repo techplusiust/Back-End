@@ -1,16 +1,17 @@
-from .models import CustomUser  # Import the custom user model
-from rest_framework.response import Response
 from django.shortcuts import render
 
+from .models import CustomUser  # Import the custom user model
 # Create your views here.
 
 from django.contrib.auth import authenticate
-from rest_framework.response import Response  # Add this import
 from django.http import JsonResponse
+from .serializers import UserSerializer, LoginSerializers
+
+from rest_framework.response import Response  # Add this import
+from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from django.contrib.auth.models import User
-from .serializers import UserSerializer, LoginSerializers
+from rest_framework.authtoken.models import Token
 
 
 @api_view(['POST'])
@@ -20,21 +21,20 @@ def signup(request):
     """
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()
+        serializer.save()
+        user = CustomUser.objects.get(email=request.data["email"])
+        user.set_password(request.data["password1"])
+        user.save()
+        token = Token.objects.create(user=user)
+
         return Response(
-            {"message": "User created successfully!",
-             "fullname": user.fullname,
-             "student_number": user.student_number,
-             "email": user.email,
-             "national_code": user.national_code,
-             "department": user.department,
-             }, 
-            
+            {
+                "token": token.key,
+                "user": serializer.data
+            },
             status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 
 @api_view(['POST'])
@@ -44,24 +44,21 @@ def login(request):
     If the user exists and the password matches, return a welcome message.
     """
     # serializer = LoginSerializer(data=request.data)
-    serializer = LoginSerializers(data=request.data, context={'request': request})
+    serializer = LoginSerializers(
+        data=request.data, context={'request': request})
 
-    
     if serializer.is_valid():
 
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
-    
+
         user = authenticate(request, username=email, password=password)
 
-        
         if user is not None:
             return JsonResponse({"message": f"Welcome back, {user.fullname}!"}, status=status.HTTP_200_OK)
         else:
             return JsonResponse({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
     return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 
 @api_view(['GET'])
@@ -78,3 +75,8 @@ def get_all_users(request):
                  for user in users]
 
     return Response(user_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def test_token(request):
+    return Response({})
