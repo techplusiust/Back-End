@@ -87,6 +87,12 @@ def get_all_users(request):
     return Response(user_data, status=status.HTTP_200_OK)
 
 
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+
 @api_view(["GET"])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def test_token(request):
-    return Response({})
+    return Response({"passed for {}".format(request.user.email)})
