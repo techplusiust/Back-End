@@ -1,0 +1,30 @@
+POST http://127.0.0.1:8000/api/accounts/signup/
+Content-Type: application/json
+
+{
+  "fullname": "Hani21",
+  "student_number": "S1289122d1c",
+  "email": "magma@ddd.c1om",
+  "national_code": "1d2819023c",
+  "department": "Computer Science",
+  "password1": "securePassword123",
+  "password2": "securePassword123"
+}
+
+###
+
+POST http://127.0.0.1:8000/api/accounts/login/
+Content-Type: application/json
+
+{
+  "email": "magma@ddd.com",
+  "password": "securePassword123" 
+}
+
+###
+
+GET http://127.0.0.1:8000/api/accounts/test_token/
+Content-Type: application/json
+Authorization: Token df2cdd517e39dec5d6ce32c97bf2efa77f619b7c
+
+{}
