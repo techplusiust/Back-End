@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',  # Add this line for Django Rest Framework
     'accounts',  # Add your accounts app here
     'drf_yasg',
+    'rest_framework.authtoken',  # Add this line for Django Rest Framework
+    
+    
 ]
 
 MIDDLEWARE = [

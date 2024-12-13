@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from .models import CustomUser  # Import the custom user model
 # Create your views here.
@@ -16,9 +16,7 @@ from rest_framework.authtoken.models import Token
 
 @api_view(['POST'])
 def signup(request):
-    """
-    View to handle user signup.
-    """
+
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -39,26 +37,38 @@ def signup(request):
 
 @api_view(['POST'])
 def login(request):
-    """
-    View to handle user login.
-    If the user exists and the password matches, return a welcome message.
-    """
+    # TOOD: Later, check whether  more data are needed to be returned from the user
+    
+    user = get_object_or_404(CustomUser, email=request.data["email"])
+
+    if not user.check_password(request.data["password"]):
+        return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    token, created = Token.objects.get_or_create(user=user)
+
+    serializer = LoginSerializers(instance=user)
+    return Response(
+        {
+            "token": token.key,
+            "user": serializer.data
+        },
+        status=status.HTTP_200_OK
+    )
+
     # serializer = LoginSerializer(data=request.data)
-    serializer = LoginSerializers(
-        data=request.data, context={'request': request})
 
-    if serializer.is_valid():
+    # if serializer.is_valid():
 
-        email = serializer.validated_data['email']
-        password = serializer.validated_data['password']
+    #     email = serializer.validated_data['email']
+    #     password = serializer.validated_data['password']
 
-        user = authenticate(request, username=email, password=password)
+    #     user = authenticate(request, username=email, password=password)
 
-        if user is not None:
-            return JsonResponse({"message": f"Welcome back, {user.fullname}!"}, status=status.HTTP_200_OK)
-        else:
-            return JsonResponse({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
-    return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     if user is not None:
+    #         return JsonResponse({"message": f"Welcome back, {user.fullname}!"}, status=status.HTTP_200_OK)
+    #     else: 
+    #         return JsonResponse({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+    # return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
