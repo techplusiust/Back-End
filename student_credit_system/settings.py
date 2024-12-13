@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-*6jfcpi4r0rfnr-5gnxw_!bye--we^!371#x-b$7*^_kui1o_3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1"
+]
 
 
 # Application definition
@@ -41,8 +43,8 @@ INSTALLED_APPS = [
     'accounts',  # Add your accounts app here
     'drf_yasg',
     'rest_framework.authtoken',  # Add this line for Django Rest Framework
-    
-    
+    'corsheaders',
+
 ]
 
 MIDDLEWARE = [
@@ -53,7 +55,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
+
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Allow your frontend's origin
+]
+
 
 ROOT_URLCONF = 'student_credit_system.urls'
 
@@ -135,4 +146,4 @@ REST_FRAMEWORK = {
     "JSON_UNDERSCOREIZE": {
         "ignore_keys": ("password1", "password2"),
     }
-    }
+}
