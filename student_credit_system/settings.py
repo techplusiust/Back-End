@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-*6jfcpi4r0rfnr-5gnxw_!bye--we^!371#x-b$7*^_kui1o_3
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "127.0.0.1"
+    "127.0.0.1",
+    "localhost",
 ]
 
 
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',  # Add this line for Django Rest Framework
     'accounts',  # Add your accounts app here
+    'professors',  # Add your accounts app here
     'drf_yasg',
     'rest_framework.authtoken',  # Add this line for Django Rest Framework
     'corsheaders',

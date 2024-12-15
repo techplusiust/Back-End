@@ -7,7 +7,6 @@ from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from .serializers import UserSerializer, LoginSerializers
 
-from rest_framework.response import Response  # Add this import
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
