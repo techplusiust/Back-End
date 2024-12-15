@@ -6,6 +6,9 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.contrib.auth.decorators import login_required
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+
 from .models import Comment, Professor
 from accounts.models import CustomUser
 from django.views.decorators.csrf import csrf_exempt
@@ -25,17 +28,41 @@ def get_professors(request):
     return Response(professors_data, status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])  # Only authenticated users can access this view
+def add_comment(request):
+    try:
+        professor_id = request.data['professor_id']  # Get professor ID from form
+
+        text = request.data['text']  # Get comment text from form
+
+        professor = get_object_or_404(Professor, id=professor_id)  # Fetch the professor
+
+        # Create and save the comment
+        comment = Comment.objects.create(
+            professor=professor,
+            user=request.user,  # Use the logged-in user
+            text=text
+        )
+
+        # Return a response, e.g., success message
+        return JsonResponse({'message': 'Comment added successfully', 'comment_id': comment.id}, status=201)
+    except KeyError as e:
+        return JsonResponse({'error': f'Invalid request {e}'}, status=400)
+
+
+"""
 # Add a comment for a professor
-# @login_required
+@api_view(['POST'])
+@login_required
 @csrf_exempt
 def add_comment(request):
     if request.method == 'POST':
-        professor_id = request.POST.get(
-            'professor_id')  # Get professor ID from form
+        professor_id = request.data['id']  # Get professor ID from form
+
         text = request.POST.get('text')  # Get comment text from form
 
-        professor = get_object_or_404(
-            Professor, id=professor_id)  # Fetch the professor
+        professor = get_object_or_404(Professor, id=professor_id)  # Fetch the professor
 
         # Create and save the comment
         comment = Comment.objects.create(
@@ -48,10 +75,10 @@ def add_comment(request):
         return JsonResponse({'message': 'Comment added successfully', 'comment_id': comment.id}, status=201)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+"""
+
 
 # View all comments for a specific professor
-
-
 def view_comments(request, professor_id):
     professor = get_object_or_404(
         Professor, id=professor_id)  # Get the professor

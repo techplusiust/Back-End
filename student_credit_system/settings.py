@@ -147,5 +147,9 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 REST_FRAMEWORK = {
     "JSON_UNDERSCOREIZE": {
         "ignore_keys": ("password1", "password2"),
-    }
+    },
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # Optional if you're using session authentication
+    ]
 }
