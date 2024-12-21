@@ -3,11 +3,15 @@ from accounts.models import CustomUser  # Import the CustomUser model
 
 
 class Professor(models.Model):
-    name = models.CharField(max_length=254, null=False, unique=True)
-    department = models.CharField(max_length=254)
+    
+    name_fa = models.CharField(max_length=254, null=False, unique=True)
+    name_en = models.CharField(max_length=254, null=False, unique=True)
+    
+    department_fa = models.CharField(max_length=254)
+    department_en = models.CharField(max_length=254)
 
     def __str__(self):
-        return f"{self.name} {self.department}"
+        return f"{self.name_fa} / {self.name_en} {self.department_fa} / {self.department_en}"
 
 
 
