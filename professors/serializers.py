@@ -6,11 +6,11 @@ from .models import Professor
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()  # Displaying user fullname
-    professor = serializers.StringRelatedField()  # Displaying professor name
+    # professor_id = serializers.StringRelatedField()  # Displaying professor name
     
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'professor_id', 'text']
+        fields = ['id', 'user', 'text']
 
 
 
