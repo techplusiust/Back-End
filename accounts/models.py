@@ -5,6 +5,10 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     username = None
+    first_name = None
+    last_name = None
+    is_staff = None
+    
     fullname = models.CharField(max_length=254, null=True)
     national_code = models.CharField(max_length=15, unique=True)
     student_number = models.CharField(max_length=15, unique=True, null=False)
@@ -15,4 +19,4 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = []
     
     def __str__(self):
-        return (self.fullname + " " + self.national_code)
+        return (self.fullname + " " + self.email)
