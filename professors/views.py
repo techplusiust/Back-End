@@ -78,6 +78,18 @@ def add_comment(request):
     except KeyError as e:
         return JsonResponse({'error': f'Invalid request {e}'}, status=400)
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from professors.models import Professor
+
+class FacultyListView(APIView):
+    permission_classes = [AllowAny]  # Allow anyone to access this endpoint
+
+    def get(self, request, *args, **kwargs):
+        """Return a list of distinct faculties in both English and Persian."""
+        faculties = Professor.objects.values('department_en', 'department_fa').distinct()
+        return Response({"faculties": list(faculties)})
 
 """
 # Add a comment for a professor
