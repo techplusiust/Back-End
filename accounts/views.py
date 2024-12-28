@@ -1,3 +1,5 @@
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import authentication_classes, permission_classes
 from django.shortcuts import render, get_object_or_404
 
 from .models import CustomUser  # Import the custom user model
@@ -38,7 +40,7 @@ def signup(request):
 @api_view(['POST'])
 def login(request):
     # TOOD: Later, check whether  more data are needed to be returned from the user
-    
+
     user = get_object_or_404(CustomUser, email=request.data["email"])
 
     if not user.check_password(request.data["password"]):
@@ -54,15 +56,18 @@ def login(request):
         },
         status=status.HTTP_200_OK
     )
-    
-    
+
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def edit_user(request, user_id):
     """
     Allow users to edit their own information.
     """
-    if request.user.id != user_id:
+    if not request.user.is_superuser:  # Ensure only superusers can edit
+        return Response({"detail": "You are not allowed to edit users."}, status=status.HTTP_403_FORBIDDEN)
+    
+    if not request.user.is_superuser and request.user.id != user_id:
         return Response({"detail": "You are not allowed to edit this user."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -71,12 +76,12 @@ def edit_user(request, user_id):
         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
     # Pass the instance and request data correctly to the serializer
-    serializer = UserSerializer(instance=user, data=request.data)  # Allow partial updates
+    serializer = UserSerializer(
+        instance=user, data=request.data)  # Allow partial updates
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 @api_view(['DELETE'])
@@ -87,7 +92,7 @@ def delete_user(request, user_id):
     """
     if request.user.id == user_id:
         return Response({"detail": "You are not allowed to delete yourself."}, status=status.HTTP_403_FORBIDDEN)
-    
+
     print(request.user.is_superuser, request.user.id, user_id)
     if not request.user.is_superuser:  # Ensure only superusers can delete
         return Response({"detail": "You are not allowed to delete users."}, status=status.HTTP_403_FORBIDDEN)
@@ -100,46 +105,60 @@ def delete_user(request, user_id):
         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-    # serializer = LoginSerializer(data=request.data)
-
-    # if serializer.is_valid():
-
-    #     email = serializer.validated_data['email']
-    #     password = serializer.validated_data['password']
-
-    #     user = authenticate(request, username=email, password=password)
-
-    #     if user is not None:
-    #         return JsonResponse({"message": f"Welcome back, {user.fullname}!"}, status=status.HTTP_200_OK)
-    #     else: 
-    #         return JsonResponse({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
-    # return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(['GET'])
 def get_all_users(request):
     """
     View to return all users from the database.
     """
     users = CustomUser.objects.all()  # Query all users from CustomUser
-    user_data = [{"fullname": user.fullname,
+    user_data = [{"id": user.id,
+                  "fullname": user.fullname,
                   "national_code": user.national_code,
                   "email": user.email,
                   "department": user.department,
-                  "student_number": user.student_number}
+                  "student_number": user.student_number,
+                  "is_superuser": user.is_superuser,
+                  }
                  for user in users]
 
     return Response(user_data, status=status.HTTP_200_OK)
 
-
-
-
-from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def test_token(request):
     return Response({"passed for {}".format(request.user.email)})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def make_superuser(request, user_id):
+    """
+    API to make a user a superuser.
+    Only existing superusers can perform this action.
+    """
+    # Check if the requesting user is a superuser
+    if not request.user.is_superuser:
+        return Response(
+            {"detail": "You do not have permission to perform this action."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    try:
+        # Get the user to be updated
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return Response(
+            {"detail": "User not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Make the user a superuser
+    user.is_superuser = True
+    user.save()
+
+    return Response(
+        {"detail": f"User {user.fullname} ({user.email}) is now a superuser."},
+        status=status.HTTP_200_OK,
+    )

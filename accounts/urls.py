@@ -8,4 +8,6 @@ urlpatterns = [
     path('test_token/', views.test_token, name='test_token'), 
     path('users/<int:user_id>/edit/', views.edit_user, name='edit-user'),
     path('users/<int:user_id>/delete/', views.delete_user, name='delete-user'),
+    path('users/<int:user_id>/make-superuser/', views.make_superuser, name='make-superuser'),
+
 ]
