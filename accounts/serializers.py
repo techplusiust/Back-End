@@ -17,7 +17,7 @@ class UserSerializer(UserCreationForm):
         # model = CustomUser
         model = get_user_model()
         # REQUIRED FIELDS
-        fields = ['fullname', 'national_code', 'email', 'department', 'student_number']
+        fields = ['id', 'fullname', 'national_code', 'email', 'department', 'student_number', 'is_superuser']
         
         extra_kwargs = {
             # 'password': {'write_only': True},  # Password should be write-only

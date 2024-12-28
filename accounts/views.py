@@ -6,10 +6,11 @@ from .models import CustomUser  # Import the custom user model
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from .serializers import UserSerializer, LoginSerializers
+from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
 
 
@@ -53,6 +54,51 @@ def login(request):
         },
         status=status.HTTP_200_OK
     )
+    
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_user(request, user_id):
+    """
+    Allow users to edit their own information.
+    """
+    if request.user.id != user_id:
+        return Response({"detail": "You are not allowed to edit this user."}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # Pass the instance and request data correctly to the serializer
+    serializer = UserSerializer(instance=user, data=request.data)  # Allow partial updates
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user(request, user_id):
+    """
+    Allow deletion of a user only if the requester has the required permissions.
+    """
+    if request.user.id == user_id:
+        return Response({"detail": "You are not allowed to delete yourself."}, status=status.HTTP_403_FORBIDDEN)
+    
+    print(request.user.is_superuser, request.user.id, user_id)
+    if not request.user.is_superuser:  # Ensure only superusers can delete
+        return Response({"detail": "You are not allowed to delete users."}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+        user.delete()
+        return Response({"detail": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+    except CustomUser.DoesNotExist:
+        return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
     # serializer = LoginSerializer(data=request.data)
 
