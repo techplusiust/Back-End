@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework.authtoken',  # Add this line for Django Rest Framework
     'corsheaders',
+    'courses'
 
 ]
 
