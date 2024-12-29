@@ -9,16 +9,20 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate
 
 
-class UserSerializer(UserCreationForm):
-    confirm_password = serializers.CharField(
+class UserSerializer(serializers.ModelSerializer):
+    
+    password1 = serializers.CharField(
+        write_only=True)  # Adding confirm password
+    password2 = serializers.CharField(
         write_only=True)  # Adding confirm password
 
     class Meta:
         # model = CustomUser
         model = get_user_model()
         # REQUIRED FIELDS
-        fields = ['id', 'fullname', 'national_code', 'email', 'department', 'student_number', 'is_superuser']
-        
+        fields = ['id', 'fullname', 'national_code', 'email', 'department', 'student_number', 'password1', 'password2']
+        read_only_fields = []  # Fields that should not be editable
+
         extra_kwargs = {
             # 'password': {'write_only': True},  # Password should be write-only
             # 'confirm_password': {'write_only': True}  # Confirm password should also be write-only
@@ -26,21 +30,55 @@ class UserSerializer(UserCreationForm):
 
     def validate(self, data):
         """
-        Ensure that password and confirm_password match. 
-        DJANGO DOES THIS AUTOMATICALLY
+        Validate password and confirm_password if provided.
         """
-        pass
+        # print('data', data)
+        password = data.get('password1')
+        confirm_password = data.get('password2')
+
+        if password or confirm_password:
+            if password != confirm_password:
+                raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+        return data
 
     def create(self, validated_data):
         """
-        Create a user with the provided validated data and the hashed password.
+        Create a user with the validated data.
         """
-        # password = validated_data.pop('confirm_password')  # Remove confirm_password since it's not stored
-        user = User.objects.create_user(**validated_data)
-        user.set_password(password)  # Set the password properly (hashed)
+        password = validated_data.pop('password1')
+        validated_data.pop('password2')  # Remove confirm password field
+
+        # Create the user
+        user = CustomUser.objects.create(
+            fullname=validated_data.get('fullname'),
+            national_code=validated_data.get('national_code'),
+            email=validated_data.get('email'),
+            department=validated_data.get('department'),
+            student_number=validated_data.get('student_number'),
+        )
+        user.set_password(password)  # Hash the password
         user.save()
         return user
+    
+    def update(self, instance, validated_data):
+        """
+        Update the user instance.
+        """
+        # Remove national_code if it is unchanged
+        if 'national_code' in validated_data and instance.national_code == validated_data['national_code']:
+            validated_data.pop('national_code')
 
+        # Handle password update if provided
+        password = validated_data.pop('password1', None)
+        confirm_password = validated_data.pop('password2', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 class LoginSerializers(serializers.Serializer):
     
