@@ -87,12 +87,15 @@ def delete_user(request, user_id):
     if request.user.id == user_id:
         return Response({"detail": "You are not allowed to delete yourself."}, status=status.HTTP_403_FORBIDDEN)
 
-    print(request.user.is_superuser, request.user.id, user_id)
+    # print(request.user.is_superuser, request.user.id, user_id)
     if not request.user.is_superuser:  # Ensure only superusers can delete
         return Response({"detail": "You are not allowed to delete users."}, status=status.HTTP_403_FORBIDDEN)
-
+    
     try:
         user = CustomUser.objects.get(id=user_id)
+        if user.is_superuser:
+            return Response({"detail": "You are not allowed to delete superusers."}, status=status.HTTP_403_FORBIDDEN)
+        
         user.delete()
         return Response({"detail": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
     except CustomUser.DoesNotExist:
