@@ -15,25 +15,22 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
 
-
 @api_view(['POST'])
 def signup(request):
 
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        user = CustomUser.objects.get(email=request.data["email"])
-        user.set_password(request.data["password1"])
-        user.save()
+        user = serializer.save()
         token = Token.objects.create(user=user)
 
         return Response(
             {
                 "token": token.key,
-                "user": serializer.data
+                "user": UserSerializer(user).data  # Return serialized user data
             },
-            status=status.HTTP_201_CREATED)
-
+            status=status.
+            HTTP_201_CREATED
+        )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -52,7 +49,7 @@ def login(request):
     return Response(
         {
             "token": token.key,
-            "user": serializer.data
+            "user": UserSerializer(user).data
         },
         status=status.HTTP_200_OK
     )
@@ -64,25 +61,22 @@ def edit_user(request, user_id):
     """
     Allow users to edit their own information.
     """
-    if not request.user.is_superuser:  # Ensure only superusers can edit
-        return Response({"detail": "You are not allowed to edit users."}, status=status.HTTP_403_FORBIDDEN)
-    
-    if not request.user.is_superuser and request.user.id != user_id:
-        return Response({"detail": "You are not allowed to edit this user."}, status=status.HTTP_403_FORBIDDEN)
+    if not request.user.is_superuser:  # Ensure only superusers can edit other users
+        if request.user.id != user_id:
+            return Response({"detail": "You are not allowed to edit this user."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
         user = CustomUser.objects.get(id=user_id)
     except CustomUser.DoesNotExist:
         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # Pass the instance and request data correctly to the serializer
-    serializer = UserSerializer(
-        instance=user, data=request.data)  # Allow partial updates
+    # Use the serializer with the user instance
+    serializer = UserSerializer(instance=user, data=request.data, partial=True)  # Allow partial updates
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -106,10 +100,14 @@ def delete_user(request, user_id):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_users(request):
     """
     View to return all users from the database.
     """
+    if not request.user.is_superuser:  # Ensure only superusers can delete
+        return Response({"detail": "You are not allowed to retrieve users."}, status=status.HTTP_403_FORBIDDEN)
+    
     users = CustomUser.objects.all()  # Query all users from CustomUser
     user_data = [{"id": user.id,
                   "fullname": user.fullname,
