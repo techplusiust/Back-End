@@ -32,8 +32,10 @@ python manage.py import_professors path/to/your/excel/file.xlsx
 
 POST
 ```/api/accounts/signup/```
+
 **body:**
-```{
+```
+{
   "fullname": "Hani12",
   "student_number": "S1228921d21d1c",
   "email": "magma@dd1dd.1co2m",
@@ -48,6 +50,7 @@ POST
 
 POST
 ```/api/accounts/login/```
+
 **body:**
 ```
 {
@@ -72,7 +75,7 @@ Replace the 9 with desired user id
 ```
 
 **headers:**
-token should be an superuser token to allow editing others
+token should be a superuser token to allow editing others
 ```
 Authorization: Token df2cdd517e39dec5d6ce32c97bf2efa77f619b7c
 ```
@@ -91,7 +94,7 @@ Replace the 9 with desired user id
 Empty
 
 **headers:**
-token should be an admin token to allow deletion
+token should be a superuser token to allow deletion
 ```
 Authorization: Token df2cdd517e39dec5d6ce32c97bf2efa77f619b7c
 ```
@@ -108,7 +111,7 @@ Replace the 9 with desired user id
 Empty
 
 **headers:**
-token should be an admin token to allow promotion
+token should be a superuser token to allow promotion
 ```
 Authorization: Token df2cdd517e39dec5d6ce32c97bf2efa77f619b7c
 ```
@@ -118,7 +121,9 @@ Authorization: Token df2cdd517e39dec5d6ce32c97bf2efa77f619b7c
 
 GET
 ```/api/accounts/users/```
+
 **body:**
+
 Empty
 
 ---
@@ -180,7 +185,7 @@ POST
 ```/api/courses/```
 
 **body:**
-
+```
 {
     "course_name_fa": "برنامه نویسی",
     "course_name_en": "Programming",
@@ -199,6 +204,7 @@ POST
     "exam_start_time": "09:00",
     "exam_duration": 2
 }
+```
 
 **headers:**
 ```
@@ -214,10 +220,12 @@ PATCH
 Replace the 1 with desired course id
 
 **body:**
+```
 {
     "first_day_of_week": 2,
     "exam_duration": 2
 }
+```
 
 **headers:**
 ```
@@ -247,6 +255,7 @@ GET
 **body:**
 
 Empty
+
 ---
 
 ## Get list of courses offered by a professor
@@ -259,6 +268,7 @@ Replace the 558 with desired professor id
 **body:**
 
 Empty
+
 ---
 
 ## Get list of courses offered in a faculty
