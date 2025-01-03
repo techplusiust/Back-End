@@ -190,8 +190,9 @@ POST
     "course_name_fa": "برنامه نویسی",
     "course_name_en": "Programming",
     "professor": 600,
-    "faculty": "Computer Engineering",
-  
+    "faculty_en": "Computer Engineering",
+    "faculty_fa": "مهندسی کامپیوتر",
+    
     "first_day_of_week": 0,
     "first_day_time": "12:00",
     "first_day_duration": 2,
