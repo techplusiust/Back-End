@@ -21,8 +21,9 @@ def validate_time_format(value):
 class Course(models.Model):
     course_name_fa = models.CharField(max_length=255, verbose_name="Course Name (Persian)")
     course_name_en = models.CharField(max_length=255, verbose_name="Course Name (English)")
-    professor = models.ForeignKey(Professor, related_name="courses", on_delete=models.CASCADE)
-    faculty = models.CharField(max_length=255, verbose_name="Faculty")
+    professor_id = models.ForeignKey(Professor, related_name="courses", on_delete=models.CASCADE)
+    faculty_fa = models.CharField(max_length=255, verbose_name="Faculty Persian")
+    faculty_en = models.CharField(max_length=255, verbose_name="Faculty English")
     
     # Schedule for two days
     first_day_of_week = models.PositiveSmallIntegerField(
@@ -61,7 +62,7 @@ class Course(models.Model):
     exam_duration = models.FloatField(verbose_name="Exam Duration (hours)")
 
     def __str__(self):
-        return f"{self.course_name_en} / {self.course_name_fa} ({self.faculty})"
+        return f"{self.course_name_en} / {self.course_name_fa} ({self.faculty_fa} / {self.faculty_en})"
   
   
     def clean(self):

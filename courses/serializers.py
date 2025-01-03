@@ -8,8 +8,7 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
-            'id', 'course_name_fa', 'course_name_en', 'professor', 'professor_name', 'faculty',
-            'first_day_of_week', 'first_day_time', 'first_day_duration',
+            'id', 'course_name_fa', 'course_name_en', 'professor_id', 'professor_name', 'faculty_fa', 'faculty_en', 'first_day_of_week', 'first_day_time', 'first_day_duration',
             'second_day_of_week', 'second_day_time', 'second_day_duration',
             'exam_date', 'exam_start_time', 'exam_duration'
         ]
@@ -17,7 +16,9 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def get_professor_name(self, obj):
         """Retrieve the professor's name for display."""
-        return f"{obj.professor.name_en} ({obj.professor.name_fa})"
+        return {'en': obj.professor_id.name_en,
+                'fa': obj.professor_id.name_fa}
+        # f"{obj.professor.name_en} ({obj.professor.name_fa})"
 
     def validate_faculty(self, value):
         """Ensure the faculty exists in the professors database."""

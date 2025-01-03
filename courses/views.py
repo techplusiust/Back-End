@@ -13,13 +13,20 @@ class CourseViewSet(ModelViewSet):
     def get_queryset(self):
         """Optionally filter courses by faculty or professor."""
         queryset = super().get_queryset()
-        faculty = self.request.query_params.get('faculty')
-        professor = self.request.query_params.get('professor')
-        if faculty:
-            queryset = queryset.filter(faculty=faculty)
+        faculty_fa = self.request.query_params.get('faculty_fa')
+        faculty_en = self.request.query_params.get('faculty_en')
+        professor = self.request.query_params.get('professor_id')
+        
+        if faculty_fa:
+            queryset = queryset.filter(faculty_fa=faculty_fa)
+        
+        elif faculty_en:
+            queryset = queryset.filter(faculty_fa=faculty_en)
+        
         if professor:
             queryset = queryset.filter(professor_id=professor)
         return queryset
+  
   
     def partial_update(self, request, *args, **kwargs):
         """Handle partial updates for a course."""
