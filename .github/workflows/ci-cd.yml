@@ -75,7 +75,7 @@ jobs:
         echo "${SSH_PRIVATE_KEY}" > /tmp/private_key
         chmod 600 /tmp/private_key
         ssh -o StrictHostKeyChecking=no -i /tmp/private_key ${SSH_USERNAME}@${SSH_HOST} << 'EOF'
-          docker load -i /home/ubuntu/build_deploy/backend.tar
+          docker load -i /home/ubuntu/build_deploy/backend.tar/backend.tar
           cd /home/ubuntu/project
           sudo sed -i "s|image: backend:.*|image: backend:${{ env.IMAGE_TAG }}|" docker-compose.yml
           sudo docker-compose up -d
