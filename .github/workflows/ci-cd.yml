@@ -15,12 +15,19 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+    
+      
+    - name: Generate Image Tag
+      id: generate_tag
+      run: |
+        tag=$(date +%Y%m%d)-${{ github.run_number }}
+        echo "IMAGE_TAG=$tag" >> $GITHUB_ENV
 
     - name: Build Backend Docker image
-      run: docker build -t backend:latest .
+      run: docker build -t backend:${{ env.IMAGE_TAG }} .
 
     - name: Save Docker image to file
-      run: docker save -o backend.tar backend:latest
+      run: docker save -o backend.tar backend:${{ env.IMAGE_TAG }}
 
     - name: Upload Docker image as artifact
       uses: actions/upload-artifact@v3
@@ -69,8 +76,9 @@ jobs:
         chmod 600 /tmp/private_key
         ssh -o StrictHostKeyChecking=no -i /tmp/private_key ${SSH_USERNAME}@${SSH_HOST} << EOF
           docker load -i /home/ubuntu/build_deploy/backend.tar/backend.tar
-          docker stop backend || true
-          docker rm backend || true
-          docker run -d --name backend -p 80:80 backend:latest
+          cd /home/ubuntu/project
+          sed -i 's|services/frontend:.*|services/frontend:${{ env.IMAGE_TAG }}|' docker-compose.yml
+          docker-compose up -d
+          rm -rf /home/ubuntu/build_deploy/backend.tar
         EOF
       shell: bash
