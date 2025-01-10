@@ -78,6 +78,7 @@ jobs:
           docker load -i /home/ubuntu/build_deploy/backend.tar/backend.tar
           cd /home/ubuntu/project
           sudo sed -i "s|image: backend:.*|image: backend:${{ env.IMAGE_TAG }}|" docker-compose.yml
+          sudo sed -i "s|image: backend:.*|image: backend:${IMAGE_TAG}|" docker-compose2.yml
           sudo docker-compose up -d
         EOF
       shell: bash
