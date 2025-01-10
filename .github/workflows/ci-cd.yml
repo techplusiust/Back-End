@@ -15,18 +15,12 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-      
-    - name: Generate Image Tag
-      id: generate_tag
-      run: |
-        tag=$(date +%Y%m%d)-${{ github.run_number }}
-        echo "IMAGE_TAG=$tag" >> $GITHUB_ENV
 
     - name: Build Backend Docker image
-      run: docker build -t backend:${{ env.IMAGE_TAG }} .
+      run: docker build -t backend:latest .
 
     - name: Save Docker image to file
-      run: docker save -o backend.tar backend:${{ env.IMAGE_TAG }}
+      run: docker save -o backend.tar backend:latest
 
     - name: Upload Docker image as artifact
       uses: actions/upload-artifact@v3
@@ -70,22 +64,15 @@ jobs:
         SSH_HOST: ${{ secrets.SERVER_HOST }}
         SSH_USERNAME: ${{ secrets.SERVER_USER }}
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        IMAGE_TAG: ${{ env.IMAGE_TAG }}
       run: |
         echo "${SSH_PRIVATE_KEY}" > /tmp/private_key
         chmod 600 /tmp/private_key
         ssh -o StrictHostKeyChecking=no -i /tmp/private_key ${SSH_USERNAME}@${SSH_HOST} << 'EOF'
-          docker load -i /home/ubuntu/build_deploy/backend.tar/backend.tar
+          sudo docker stop backend || true
+          sudo docker rmi -f backend:latest || true
+          docker load -i /home/ubuntu/build_deploy/backend.tar
           cd /home/ubuntu/project
-          #IMAGE_TAG=${{ env.IMAGE_TAG }}
-          #echo $IMAGE_TAG
-          #sudo sed -i "s|image: backend:.*|image: backend:${IMAGE_TAG}|" docker-compose.yml
-          #sudo sed -i "s|image: backend:.*|image: backend:${IMAGE_TAG}|" docker-compose2.yml
-          echo "IMAGE_TAG=${{ env.IMAGE_TAG }}"
-          IMAGE_TAG=${{ env.IMAGE_TAG }}
-          echo "IMAGE_TAG after assignment: $IMAGE_TAG"
-          ls -l docker-compose.yml
-          sudo sed -i "s|image: backend:.*|image: backend:${IMAGE_TAG}|" docker-compose.yml
-          sudo docker-compose up -d
+          sudo docker-compose down  # stop and remove previous containers
+          sudo docker-compose up -d  # run new containers with the latest image
         EOF
       shell: bash
