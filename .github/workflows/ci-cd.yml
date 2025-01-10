@@ -70,7 +70,7 @@ jobs:
         ssh -o StrictHostKeyChecking=no -i /tmp/private_key ${SSH_USERNAME}@${SSH_HOST} << 'EOF'
           sudo docker stop backend || true
           sudo docker rmi -f backend:latest || true
-          docker load -i /home/ubuntu/build_deploy/backend.tar
+          docker load -i /home/ubuntu/build_deploy/backend.tar/backend.tar
           cd /home/ubuntu/project
           sudo docker-compose down  # stop and remove previous containers
           sudo docker-compose up -d  # run new containers with the latest image
