@@ -77,10 +77,15 @@ jobs:
         ssh -o StrictHostKeyChecking=no -i /tmp/private_key ${SSH_USERNAME}@${SSH_HOST} << 'EOF'
           docker load -i /home/ubuntu/build_deploy/backend.tar/backend.tar
           cd /home/ubuntu/project
+          #IMAGE_TAG=${{ env.IMAGE_TAG }}
+          #echo $IMAGE_TAG
+          #sudo sed -i "s|image: backend:.*|image: backend:${IMAGE_TAG}|" docker-compose.yml
+          #sudo sed -i "s|image: backend:.*|image: backend:${IMAGE_TAG}|" docker-compose2.yml
+          echo "IMAGE_TAG=${{ env.IMAGE_TAG }}"
           IMAGE_TAG=${{ env.IMAGE_TAG }}
-          echo $IMAGE_TAG
+          echo "IMAGE_TAG after assignment: $IMAGE_TAG"
+          ls -l docker-compose.yml
           sudo sed -i "s|image: backend:.*|image: backend:${IMAGE_TAG}|" docker-compose.yml
-          sudo sed -i "s|image: backend:.*|image: backend:${IMAGE_TAG}|" docker-compose2.yml
           sudo docker-compose up -d
         EOF
       shell: bash
