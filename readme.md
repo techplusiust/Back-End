@@ -189,7 +189,7 @@ POST
 {
     "course_name_fa": "برنامه نویسی",
     "course_name_en": "Programming",
-    "professor": 600,
+    "professor_id": 600,
     "faculty_en": "Computer Engineering",
     "faculty_fa": "مهندسی کامپیوتر",
     
