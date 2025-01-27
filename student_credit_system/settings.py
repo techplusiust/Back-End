@@ -74,8 +74,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:80",  # Allow your frontend's origin
     "http://194.5.206.181:8081",  # Allow your frontend's origin
     "http://194.5.206.181:80",  # Allow your frontend's origin
-    # "http://frontend:8081",
-    # "http://frontend:80",
+    "http://frontend:8081",
+    "http://frontend:80",
+    "http://frontend:*",
 ]
 
 
