@@ -67,6 +67,8 @@ MIDDLEWARE = [
 # CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Allow your frontend's origin
+    "http://localhost:8081",  # Allow your frontend's origin
+    "http://194.5.206.181:8081",  # Allow your frontend's origin
 ]
 
 
