@@ -1,0 +1,78 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build Backend Docker image
+      run: docker build -t backend:latest .
+
+    - name: Save Docker image to file
+      run: docker save -o backend.tar backend:latest
+
+    - name: Upload Docker image as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-image
+        path: backend.tar
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Download Docker image artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-image
+        path: backend.tar
+
+    - name: Test SSH Connection
+      env:
+        SSH_HOST: ${{ secrets.SERVER_HOST }}
+        SSH_USERNAME: ${{ secrets.SERVER_USER }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        echo "${SSH_PRIVATE_KEY}" > /tmp/private_key
+        chmod 600 /tmp/private_key
+        ssh -v -o StrictHostKeyChecking=no -i /tmp/private_key ${SSH_USERNAME}@${SSH_HOST} "echo 'SSH connection successful'"
+
+    - name: Upload Docker image to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SERVER_PORT }}
+        source: "backend.tar"
+        target: "/home/ubuntu/build_deploy/"
+
+    - name: Deploy Docker image on server
+      env:
+        SSH_HOST: ${{ secrets.SERVER_HOST }}
+        SSH_USERNAME: ${{ secrets.SERVER_USER }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        echo "${SSH_PRIVATE_KEY}" > /tmp/private_key
+        chmod 600 /tmp/private_key
+        ssh -o StrictHostKeyChecking=no -i /tmp/private_key ${SSH_USERNAME}@${SSH_HOST} << 'EOF'
+          sudo docker stop backend || true
+          sudo docker rmi -f backend:latest || true
+          docker load -i /home/ubuntu/build_deploy/backend.tar/backend.tar
+          cd /home/ubuntu/project
+          sudo docker-compose down  # stop and remove previous containers
+          sudo docker-compose up -d  # run new containers with the latest image
+        EOF
+      shell: bash
