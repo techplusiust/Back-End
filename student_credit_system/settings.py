@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-"194.5.206.181", 
+    "194.5.206.181", 
 ]
 
 
@@ -66,9 +66,11 @@ MIDDLEWARE = [
 
 # CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Allow your frontend's origin
-    "http://localhost:8081",  # Allow your frontend's origin
+    "http://127.0.0.1:5173",  # Allow your frontend's origin
+    "http://127.0.0.1:8081",  # Allow your frontend's origin
     "http://194.5.206.181:8081",  # Allow your frontend's origin
+    "http://frontend:8081",
+    "http://frontend:80",
 ]
 
 
