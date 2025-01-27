@@ -10,6 +10,13 @@ COPY . .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Install dependencies
+RUN python3 manage.py import_professors professors/management/commands/golestan_courses_4022.xlsx
+
+
 # Expose the port the app runs on
 EXPOSE 8000
 
